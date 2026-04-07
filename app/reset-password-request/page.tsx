@@ -42,14 +42,22 @@ export default function ResetPasswordRequestPage() {
       });
 
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
+        const body: Record<string, unknown> = await res
+          .json()
+          .catch(() => ({}));
+        const errors =
+          body.errors && typeof body.errors === "object"
+            ? (body.errors as Record<string, string[]>)
+            : undefined;
         const firstError =
-          body?.errors && typeof body.errors === "object"
-            ? Object.values(body.errors)[0]?.[0]
+          errors && Object.values(errors).length > 0
+            ? Object.values(errors)[0]?.[0]
             : null;
+        const message =
+          typeof body.message === "string" ? body.message : null;
         throw new Error(
           firstError ||
-            body.message ||
+            message ||
             `Failed to submit reset request (status ${res.status}).`
         );
       }
