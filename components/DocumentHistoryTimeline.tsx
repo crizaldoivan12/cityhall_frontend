@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
 import Loader from "@/components/Loader";
 import { formatDateTimeEncoded } from "@/lib/dateUtils";
 
@@ -37,8 +38,6 @@ type DocumentHistoryTimelineProps = {
   document?: DocumentHistoryDetails | null;
 };
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "https://cityhall-backend-s1fg.onrender.com/api";
 
 export default function DocumentHistoryTimeline({
   documentId,

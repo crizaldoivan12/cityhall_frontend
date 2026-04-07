@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
 import { useParams, useRouter } from "next/navigation";
 import DocumentForm, { DocumentPayload } from "@/components/DocumentForm";
 import DocumentHistoryTimeline, {
@@ -26,8 +27,6 @@ type DocumentApi = DocumentPayload & {
   document_code: string;
 };
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "https://cityhall-backend-s1fg.onrender.com/api";
 
 type TabId = "details" | "history";
 

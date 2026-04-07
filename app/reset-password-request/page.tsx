@@ -1,12 +1,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "https://cityhall-backend-s1fg.onrender.com/api";
 
 export default function ResetPasswordRequestPage() {
   const router = useRouter();

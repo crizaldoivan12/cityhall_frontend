@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
 import Link from "next/link";
 import Loader from "@/components/Loader";
 import { useAuth } from "@/components/AuthProvider";
@@ -52,8 +53,6 @@ type NotificationItem = {
   inactive_days?: number;
 };
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "https://cityhall-backend-s1fg.onrender.com/api";
 
 export default function EditRequestNotifications() {
   const { user } = useAuth();

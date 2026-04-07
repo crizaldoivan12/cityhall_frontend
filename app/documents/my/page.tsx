@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { clearAuthToken } from "@/lib/api";
@@ -29,8 +30,6 @@ type Document = {
   created_at?: string;
 };
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "https://cityhall-backend-s1fg.onrender.com/api";
 
 export default function MyDocumentsPage() {
   const router = useRouter();

@@ -1,6 +1,8 @@
 // Simple API client using Fetch for the City Hall Monitoring System.
 // Stores and reuses the Sanctum API token from localStorage.
 
+import { API_BASE_URL } from "@/lib/apiBase";
+
 export type User = {
   id: number;
   name: string;
@@ -12,9 +14,6 @@ export type LoginResponse = {
   token: string;
   user: User;
 };
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "https://cityhall-backend-s1fg.onrender.com/api";
 
 function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
