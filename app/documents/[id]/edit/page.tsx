@@ -27,7 +27,7 @@ type DocumentApi = DocumentPayload & {
 };
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "https://cityhall-backend-s1fg.onrender.com/api";
 
 type TabId = "details" | "history";
 
