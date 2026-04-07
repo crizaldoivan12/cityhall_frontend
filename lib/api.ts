@@ -53,10 +53,17 @@ async function apiFetch<T>(
     }
   }
 
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers,
+    });
+  } catch {
+    throw new Error(
+      `Cannot reach backend API (${API_BASE_URL}). Check frontend API URL and backend CORS settings.`
+    );
+  }
 
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));
