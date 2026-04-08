@@ -3,6 +3,8 @@
 
 import { API_BASE_URL } from "@/lib/apiBase";
 
+const API_REQUEST_TIMEOUT_MS = 20000;
+
 export type User = {
   id: number;
   name: string;
@@ -44,6 +46,8 @@ async function apiFetch<T>(
 ): Promise<T> {
   const headers = new Headers(options.headers);
   headers.set("Content-Type", "application/json");
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_REQUEST_TIMEOUT_MS);
 
   if (auth) {
     const token = getAuthToken();
@@ -57,11 +61,20 @@ async function apiFetch<T>(
     res = await fetch(`${API_BASE_URL}${path}`, {
       ...options,
       headers,
+      signal: controller.signal,
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error(
+        `The backend is taking too long to respond (${API_BASE_URL}). If Render is waking up, please wait a moment and try again.`
+      );
+    }
+
     throw new Error(
       `Cannot reach backend API (${API_BASE_URL}). Check frontend API URL and backend CORS settings.`
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (!res.ok) {
