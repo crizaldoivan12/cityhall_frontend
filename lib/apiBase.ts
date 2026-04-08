@@ -4,6 +4,7 @@ const PRODUCTION_API_BASE_URLS = [
 ] as const;
 
 const API_BASE_STORAGE_KEY = "cityhall_api_base_url";
+const INTERNAL_API_PROXY_BASE = "/api/proxy";
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
@@ -128,7 +129,12 @@ export async function warmUpApiOrigins(timeoutMs = 12000): Promise<void> {
 }
 
 export function buildApiUrl(path: string): string {
+  if (typeof window !== "undefined") {
+    return `${INTERNAL_API_PROXY_BASE}${path}`;
+  }
+
   return `${getApiBaseUrl()}${path}`;
 }
 
-export const API_BASE_URL = getApiBaseUrl();
+export const API_BASE_URL =
+  typeof window !== "undefined" ? INTERNAL_API_PROXY_BASE : getApiBaseUrl();

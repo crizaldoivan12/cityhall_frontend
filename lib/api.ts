@@ -6,6 +6,7 @@ import {
   rememberWorkingApiBaseUrl,
   getApiBaseUrl,
   warmUpApiOrigins,
+  API_BASE_URL,
 } from "@/lib/apiBase";
 
 const API_REQUEST_TIMEOUT_MS = 75000;
@@ -74,8 +75,11 @@ async function apiFetch<T>(
     }
   };
 
-  const apiBaseCandidates = getApiBaseCandidates();
-  const initialApiBaseUrl = getApiBaseUrl();
+  const clientSideProxy = typeof window !== "undefined";
+  const apiBaseCandidates = clientSideProxy
+    ? [API_BASE_URL]
+    : getApiBaseCandidates();
+  const initialApiBaseUrl = clientSideProxy ? API_BASE_URL : getApiBaseUrl();
   const orderedApiBases = Array.from(
     new Set([initialApiBaseUrl, ...apiBaseCandidates])
   );
@@ -90,7 +94,9 @@ async function apiFetch<T>(
 
     try {
       res = await executeRequest(apiBaseUrl);
-      rememberWorkingApiBaseUrl(apiBaseUrl);
+      if (!clientSideProxy) {
+        rememberWorkingApiBaseUrl(apiBaseUrl);
+      }
       break;
     } catch (error) {
       lastAttemptedApiBaseUrl = apiBaseUrl;
@@ -100,7 +106,9 @@ async function apiFetch<T>(
 
         try {
           res = await executeRequest(apiBaseUrl);
-          rememberWorkingApiBaseUrl(apiBaseUrl);
+          if (!clientSideProxy) {
+            rememberWorkingApiBaseUrl(apiBaseUrl);
+          }
           break;
         } catch (retryError) {
           if (
