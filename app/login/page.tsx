@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
-import { API_BASE_URL } from "@/lib/apiBase";
+import { getApiOriginCandidates } from "@/lib/apiBase";
 import Image from "next/image";
 import { useAuth } from "@/components/AuthProvider";
 import Loader from "@/components/Loader";
@@ -34,9 +34,11 @@ export default function LoginPage() {
 
     // Wake sleeping Render backends early so the login request is less likely
     // to hit a cold start timeout. Image requests do not require CORS access.
-    const warmupImage = new window.Image();
-    const warmupUrl = API_BASE_URL.replace(/\/api$/, "");
-    warmupImage.src = `${warmupUrl}/?warmup=${Date.now()}`;
+    const timestamp = Date.now();
+    getApiOriginCandidates().forEach((warmupUrl) => {
+      const warmupImage = new window.Image();
+      warmupImage.src = `${warmupUrl}/?warmup=${timestamp}`;
+    });
   }, []);
 
   async function handleSubmit(e: FormEvent) {

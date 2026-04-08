@@ -1,7 +1,11 @@
 // Simple API client using Fetch for the City Hall Monitoring System.
 // Stores and reuses the Sanctum API token from localStorage.
 
-import { API_BASE_URL } from "@/lib/apiBase";
+import {
+  getApiBaseCandidates,
+  rememberWorkingApiBaseUrl,
+  getApiBaseUrl,
+} from "@/lib/apiBase";
 
 const API_REQUEST_TIMEOUT_MS = 45000;
 const API_RETRY_DELAY_MS = 3000;
@@ -45,7 +49,7 @@ async function apiFetch<T>(
   options: RequestInit = {},
   auth = true
 ): Promise<T> {
-  const executeRequest = async (): Promise<Response> => {
+  const executeRequest = async (apiBaseUrl: string): Promise<Response> => {
     const headers = new Headers(options.headers);
     headers.set("Content-Type", "application/json");
     const controller = new AbortController();
@@ -59,7 +63,7 @@ async function apiFetch<T>(
     }
 
     try {
-      return await fetch(`${API_BASE_URL}${path}`, {
+      return await fetch(`${apiBaseUrl}${path}`, {
         ...options,
         headers,
         signal: controller.signal,
@@ -69,31 +73,70 @@ async function apiFetch<T>(
     }
   };
 
-  let res: Response;
-  try {
-    res = await executeRequest();
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "AbortError") {
-      await new Promise((resolve) => setTimeout(resolve, API_RETRY_DELAY_MS));
+  const apiBaseCandidates = getApiBaseCandidates();
+  const initialApiBaseUrl = getApiBaseUrl();
+  const orderedApiBases = Array.from(
+    new Set([initialApiBaseUrl, ...apiBaseCandidates])
+  );
 
-      try {
-        res = await executeRequest();
-      } catch (retryError) {
-        if (retryError instanceof DOMException && retryError.name === "AbortError") {
-          throw new Error(
-            `The backend is taking too long to respond (${API_BASE_URL}). If Render is waking up, please wait a moment and try again.`
-          );
+  let lastAttemptedApiBaseUrl = initialApiBaseUrl;
+  let sawTimeout = false;
+  let res: Response | null = null;
+
+  for (let index = 0; index < orderedApiBases.length; index += 1) {
+    const apiBaseUrl = orderedApiBases[index];
+    const isLastCandidate = index === orderedApiBases.length - 1;
+
+    try {
+      res = await executeRequest(apiBaseUrl);
+      rememberWorkingApiBaseUrl(apiBaseUrl);
+      break;
+    } catch (error) {
+      lastAttemptedApiBaseUrl = apiBaseUrl;
+      if (error instanceof DOMException && error.name === "AbortError") {
+        sawTimeout = true;
+        await new Promise((resolve) => setTimeout(resolve, API_RETRY_DELAY_MS));
+
+        try {
+          res = await executeRequest(apiBaseUrl);
+          rememberWorkingApiBaseUrl(apiBaseUrl);
+          break;
+        } catch (retryError) {
+          if (
+            retryError instanceof DOMException &&
+            retryError.name === "AbortError"
+          ) {
+            sawTimeout = true;
+          }
+
+          if (isLastCandidate) {
+            if (sawTimeout) {
+              throw new Error(
+                `The backend is taking too long to respond (${lastAttemptedApiBaseUrl}). If Render is waking up, please wait a moment and try again.`
+              );
+            }
+
+            throw new Error(
+              `Cannot reach backend API (${lastAttemptedApiBaseUrl}). Check frontend API URL and backend CORS settings.`
+            );
+          }
+
+          continue;
         }
+      }
 
+      if (isLastCandidate) {
         throw new Error(
-          `Cannot reach backend API (${API_BASE_URL}). Check frontend API URL and backend CORS settings.`
+          `Cannot reach backend API (${lastAttemptedApiBaseUrl}). Check frontend API URL and backend CORS settings.`
         );
       }
-    } else {
-      throw new Error(
-        `Cannot reach backend API (${API_BASE_URL}). Check frontend API URL and backend CORS settings.`
-      );
     }
+  }
+
+  if (!res) {
+    throw new Error(
+      `Cannot reach backend API (${lastAttemptedApiBaseUrl}). Check frontend API URL and backend CORS settings.`
+    );
   }
 
   if (!res.ok) {

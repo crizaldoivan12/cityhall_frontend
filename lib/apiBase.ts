@@ -1,4 +1,9 @@
-const PRODUCTION_API_BASE_URL = "https://cityhall-backend-1.onrender.com/api";
+const PRODUCTION_API_BASE_URLS = [
+  "https://cityhall-backend-s1fg.onrender.com/api",
+  "https://cityhall-backend-1.onrender.com/api",
+] as const;
+
+const API_BASE_STORAGE_KEY = "cityhall_api_base_url";
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
@@ -22,24 +27,84 @@ function isLocalApiBase(url: string): boolean {
   }
 }
 
-function resolveApiBaseUrl(): string {
-  const raw =
-    process.env.NEXT_PUBLIC_API_BASE_URL ??
-    process.env.NEXT_PUBLIC_API_URL ??
-    PRODUCTION_API_BASE_URL;
+function normalizeApiBase(url: string): string {
+  return trimTrailingSlash(url);
+}
 
-  const candidate = trimTrailingSlash(raw);
+function getConfiguredApiBase(): string {
+  const configured =
+    process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL;
 
-  // Safety guard: if a production deployment is accidentally configured to use
-  // localhost, keep the app functional by falling back to the hosted backend.
+  if (!configured) {
+    return PRODUCTION_API_BASE_URLS[0];
+  }
+
+  const normalized = normalizeApiBase(configured);
+
   if (typeof window !== "undefined") {
     const runningLocally = isLoopbackHostname(window.location.hostname);
-    if (!runningLocally && isLocalApiBase(candidate)) {
-      return PRODUCTION_API_BASE_URL;
+    if (!runningLocally && isLocalApiBase(normalized)) {
+      return PRODUCTION_API_BASE_URLS[0];
     }
   }
 
-  return candidate;
+  return normalized;
 }
 
-export const API_BASE_URL = resolveApiBaseUrl();
+function getStoredApiBase(): string | null {
+  if (typeof window === "undefined") return null;
+  const stored = window.localStorage.getItem(API_BASE_STORAGE_KEY);
+  return stored ? normalizeApiBase(stored) : null;
+}
+
+function setStoredApiBase(apiBaseUrl: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(API_BASE_STORAGE_KEY, normalizeApiBase(apiBaseUrl));
+}
+
+export function getApiBaseCandidates(): string[] {
+  const configured = getConfiguredApiBase();
+  const stored = getStoredApiBase();
+
+  return Array.from(
+    new Set(
+      [stored, configured, ...PRODUCTION_API_BASE_URLS]
+        .filter((value): value is string => Boolean(value))
+        .map(normalizeApiBase)
+    )
+  );
+}
+
+let currentApiBaseUrl = getApiBaseCandidates()[0];
+
+export function getApiBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    const [preferred] = getApiBaseCandidates();
+    if (preferred && preferred !== currentApiBaseUrl) {
+      currentApiBaseUrl = preferred;
+    }
+  }
+
+  return currentApiBaseUrl;
+}
+
+export function setApiBaseUrl(apiBaseUrl: string): string {
+  const normalized = normalizeApiBase(apiBaseUrl);
+  currentApiBaseUrl = normalized;
+  setStoredApiBase(normalized);
+  return normalized;
+}
+
+export function rememberWorkingApiBaseUrl(apiBaseUrl: string): string {
+  return setApiBaseUrl(apiBaseUrl);
+}
+
+export function getApiOriginCandidates(): string[] {
+  return getApiBaseCandidates().map((apiBaseUrl) => apiBaseUrl.replace(/\/api$/, ""));
+}
+
+export function buildApiUrl(path: string): string {
+  return `${getApiBaseUrl()}${path}`;
+}
+
+export const API_BASE_URL = getApiBaseUrl();

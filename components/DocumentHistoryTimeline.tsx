@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
+import { buildApiUrl } from "@/lib/apiBase";
 import Loader from "@/components/Loader";
 import { formatDateTimeEncoded } from "@/lib/dateUtils";
 
@@ -205,7 +205,7 @@ export default function DocumentHistoryTimeline({
       try {
         setError(null);
         const res = await fetch(
-          `${API_BASE}/documents/${documentId}/history`,
+          buildApiUrl(`/documents/${documentId}/history`),
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) {

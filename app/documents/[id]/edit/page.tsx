@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
+import { buildApiUrl } from "@/lib/apiBase";
 import { useParams, useRouter } from "next/navigation";
 import DocumentForm, { DocumentPayload } from "@/components/DocumentForm";
 import DocumentHistoryTimeline, {
@@ -67,7 +67,7 @@ export default function EditDocumentPage() {
           cachedJson(
             "departments:per_page=200",
             async () => {
-              const r = await fetch(`${API_BASE}/departments?per_page=200`, {
+              const r = await fetch(buildApiUrl("/departments?per_page=200"), {
                 headers: { Authorization: `Bearer ${token}` },
               });
               if (!r.ok) throw new Error("Failed to load departments");
@@ -75,7 +75,7 @@ export default function EditDocumentPage() {
             },
             10 * 60 * 1000
           ),
-          fetch(`${API_BASE}/documents/${documentId}`, {
+          fetch(buildApiUrl(`/documents/${documentId}`), {
             headers: { Authorization: `Bearer ${token}` },
           }).then(async (r) => {
             if (!r.ok) throw new Error("Failed to load document");
@@ -130,7 +130,7 @@ export default function EditDocumentPage() {
   }, [router, token, documentId]);
 
   async function handleUpdate(payload: DocumentPayload) {
-    const res = await fetch(`${API_BASE}/documents/${documentId}`, {
+    const res = await fetch(buildApiUrl(`/documents/${documentId}`), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

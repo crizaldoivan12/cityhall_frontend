@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
+import { buildApiUrl } from "@/lib/apiBase";
 import { useRouter } from "next/navigation";
 import { clearAuthToken } from "@/lib/api";
 import MainLayout from "@/components/MainLayout";
@@ -47,7 +47,7 @@ export default function DepartmentsPage() {
   const someSelected = visibleIds.some((id) => selectedIds.includes(id));
 
   const loadDepartments = useCallback(async () => {
-    const res = await fetch(`${API_BASE}/departments?per_page=100`, {
+    const res = await fetch(buildApiUrl("/departments?per_page=100"), {
       headers: { Authorization: `Bearer ${token}` },
     }).then((r) => r.json());
     setDepartments(res.data ?? []);
@@ -92,7 +92,7 @@ export default function DepartmentsPage() {
     setSuccess(null);
     
     try {
-      const res = await fetch(`${API_BASE}/departments`, {
+      const res = await fetch(buildApiUrl("/departments"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -140,7 +140,7 @@ export default function DepartmentsPage() {
     setSuccess(null);
 
     try {
-      const res = await fetch(`${API_BASE}/departments/bulk-delete`, {
+      const res = await fetch(buildApiUrl("/departments/bulk-delete"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

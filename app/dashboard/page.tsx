@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
+import { buildApiUrl } from "@/lib/apiBase";
 import { useRouter } from "next/navigation";
 import { clearAuthToken, type User } from "@/lib/api";
 import MainLayout from "@/components/MainLayout";
@@ -134,7 +134,7 @@ export default function DashboardPage() {
             cachedJson(
               "dashboard:metrics",
               async () => {
-                const r = await fetch(`${API_BASE}/dashboard/metrics`, { headers });
+                const r = await fetch(buildApiUrl("/dashboard/metrics"), { headers });
                 if (!r.ok) throw new Error("Failed to load metrics");
                 return r.json();
               },
@@ -143,7 +143,7 @@ export default function DashboardPage() {
             cachedJson(
               "dashboard:recent:10",
               async () => {
-                const r = await fetch(`${API_BASE}/documents/recent?limit=0`, {
+                const r = await fetch(buildApiUrl("/documents/recent?limit=0"), {
                   headers,
                 });
                 if (!r.ok) throw new Error("Failed to load recent documents");
@@ -163,7 +163,7 @@ export default function DashboardPage() {
             `dashboard:encoder-my-docs:${userData.id}`,
             async () => {
               const r = await fetch(
-                `${API_BASE}/documents?encoded_by=${userData.id}&per_page=5`,
+                buildApiUrl(`/documents?encoded_by=${userData.id}&per_page=5`),
                 {
                   headers,
                 }
@@ -176,7 +176,7 @@ export default function DashboardPage() {
             cachedJson(
               "dashboard:recent:5",
               async () => {
-                const r = await fetch(`${API_BASE}/documents/recent?limit=5`, {
+                const r = await fetch(buildApiUrl("/documents/recent?limit=5"), {
                   headers,
                 });
                 if (!r.ok) throw new Error("Failed to load recent documents");
@@ -192,7 +192,7 @@ export default function DashboardPage() {
           const metricsRes = await cachedJson(
             "dashboard:metrics",
             async () => {
-              const r = await fetch(`${API_BASE}/dashboard/metrics`, {
+              const r = await fetch(buildApiUrl("/dashboard/metrics"), {
                 headers: { Authorization: `Bearer ${token}` },
               });
               if (!r.ok) throw new Error("Failed to load metrics");
@@ -222,7 +222,7 @@ export default function DashboardPage() {
 
     const refreshRecent = async () => {
       try {
-        const r = await fetch(`${API_BASE}/documents/recent?limit=0`, {
+        const r = await fetch(buildApiUrl("/documents/recent?limit=0"), {
           headers,
         });
         if (!r.ok) return;

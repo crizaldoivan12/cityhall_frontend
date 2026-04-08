@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
+import { buildApiUrl } from "@/lib/apiBase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { clearAuthToken } from "@/lib/api";
@@ -152,7 +152,7 @@ export default function DocumentsPage() {
     if (departmentFilter) qs.set("routed_department_id", departmentFilter);
     if (dateFilterType === "date" && createdDate) qs.set("created_date", createdDate);
     if (dateFilterType === "month" && createdMonth) qs.set("created_month", createdMonth);
-    return `${API_BASE}/documents?${qs.toString()}`;
+    return buildApiUrl(`/documents?${qs.toString()}`);
   }, [page, searchTerm, statusFilter, departmentFilter, createdDate, createdMonth, dateFilterType]);
 
   const exportQueryString = useMemo(() => {
@@ -200,8 +200,8 @@ export default function DocumentsPage() {
     try {
       const endpoint =
         kind === "excel"
-          ? `${API_BASE}/documents/export/excel?${exportQueryString}`
-          : `${API_BASE}/documents/export/pdf?${exportQueryString}`;
+          ? buildApiUrl(`/documents/export/excel?${exportQueryString}`)
+          : buildApiUrl(`/documents/export/pdf?${exportQueryString}`);
 
       const res = await fetch(endpoint, {
         method: "GET",
@@ -257,7 +257,7 @@ export default function DocumentsPage() {
           cachedJson(
             "departments:per_page=100",
             async () => {
-              const r = await fetch(`${API_BASE}/departments?per_page=100`, {
+              const r = await fetch(buildApiUrl("/departments?per_page=100"), {
                 headers,
                 signal: controller.signal,
               });
@@ -317,7 +317,7 @@ export default function DocumentsPage() {
     (async () => {
       try {
         const headers = { Authorization: `Bearer ${token}` };
-        const res = await fetch(`${API_BASE}/edit-requests/outgoing`, {
+        const res = await fetch(buildApiUrl("/edit-requests/outgoing"), {
           headers,
           signal: controller.signal,
         });
@@ -379,7 +379,7 @@ export default function DocumentsPage() {
       setRequestNotice(null);
       setReasonNotice(null);
       const res = await fetch(
-        `${API_BASE}/documents/${doc.id}/edit-requests`,
+        buildApiUrl(`/documents/${doc.id}/edit-requests`),
         {
           method: "POST",
           headers: {
@@ -433,7 +433,7 @@ export default function DocumentsPage() {
     setReasonNotice(null);
     setSavingReasonDocId(doc.id);
     try {
-      const res = await fetch(`${API_BASE}/documents/${doc.id}/inactivity-reason`, {
+      const res = await fetch(buildApiUrl(`/documents/${doc.id}/inactivity-reason`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -502,7 +502,7 @@ export default function DocumentsPage() {
     const count = selectedIds.length;
 
     try {
-      const res = await fetch(`${API_BASE}/documents/bulk-status`, {
+      const res = await fetch(buildApiUrl("/documents/bulk-status"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
+import { buildApiUrl } from "@/lib/apiBase";
 import Link from "next/link";
 import Loader from "@/components/Loader";
 import { useAuth } from "@/components/AuthProvider";
@@ -81,7 +81,7 @@ export default function EditRequestNotifications() {
         cachedJson(
           `notifications:${user.id}`,
           async () => {
-            const r = await fetch(`${API_BASE}/edit-requests/notifications`, {
+            const r = await fetch(buildApiUrl("/edit-requests/notifications"), {
               headers,
             });
             if (!r.ok) {
@@ -92,7 +92,7 @@ export default function EditRequestNotifications() {
           },
           5 * 1000
         ),
-        fetch(`${API_BASE}/password-reset-requests/notifications`, { headers })
+        fetch(buildApiUrl("/password-reset-requests/notifications"), { headers })
           .then(async (r) => {
             if (!r.ok) return { data: [], unread_count: 0 };
             return r.json();
@@ -152,7 +152,7 @@ export default function EditRequestNotifications() {
   const markAllRead = useCallback(async () => {
     if (!token) return;
     await Promise.all([
-      fetch(`${API_BASE}/edit-requests/notifications/mark-read`, {
+      fetch(buildApiUrl("/edit-requests/notifications/mark-read"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -160,7 +160,7 @@ export default function EditRequestNotifications() {
         },
         body: JSON.stringify({ kind: "all" }),
       }),
-      fetch(`${API_BASE}/password-reset-requests/notifications/mark-read`, {
+      fetch(buildApiUrl("/password-reset-requests/notifications/mark-read"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -189,7 +189,7 @@ export default function EditRequestNotifications() {
     const actionLabel = decision === "accept" ? "approve" : "reject";
     try {
       const res = await fetch(
-        `${API_BASE}/edit-requests/${request.id}/${decision}`,
+        buildApiUrl(`/edit-requests/${request.id}/${decision}`),
         {
           method: "POST",
           headers: {

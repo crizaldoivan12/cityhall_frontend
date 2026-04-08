@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
+import { buildApiUrl } from "@/lib/apiBase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import MainLayout from "@/components/MainLayout";
@@ -68,7 +68,7 @@ export default function EditRequestsPage() {
           cachedJson(
             "edit-requests:incoming",
             async () => {
-              const r = await fetch(`${API_BASE}/edit-requests/incoming`, {
+              const r = await fetch(buildApiUrl("/edit-requests/incoming"), {
                 headers,
                 signal: controller.signal,
               });
@@ -85,7 +85,7 @@ export default function EditRequestsPage() {
           cachedJson(
             "edit-requests:outgoing",
             async () => {
-              const r = await fetch(`${API_BASE}/edit-requests/outgoing`, {
+              const r = await fetch(buildApiUrl("/edit-requests/outgoing"), {
                 headers,
                 signal: controller.signal,
               });
@@ -129,7 +129,7 @@ export default function EditRequestsPage() {
       setActingId(request.id);
       setError(null);
       const res = await fetch(
-        `${API_BASE}/edit-requests/${request.id}/${decision}`,
+        buildApiUrl(`/edit-requests/${request.id}/${decision}`),
         {
           method: "POST",
           headers: {
@@ -147,7 +147,7 @@ export default function EditRequestsPage() {
         prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r))
       );
       // Reload outgoing so requester sees new status when they visit this page.
-      const outRes = await fetch(`${API_BASE}/edit-requests/outgoing`, {
+      const outRes = await fetch(buildApiUrl("/edit-requests/outgoing"), {
         headers: { Authorization: `Bearer ${token}` },
       }).then((r) => r.json());
       setOutgoing(outRes.data ?? []);

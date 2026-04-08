@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
+import { buildApiUrl } from "@/lib/apiBase";
 import { useRouter } from "next/navigation";
 import { clearAuthToken } from "@/lib/api";
 import { cachedJson } from "@/lib/cache";
@@ -59,7 +59,7 @@ export default function UsersPage() {
         const res = await cachedJson(
           "users:per_page=100",
           async () => {
-            const r = await fetch(`${API_BASE}/users`, {
+            const r = await fetch(buildApiUrl("/users"), {
               headers: { Authorization: `Bearer ${token}` },
             });
             if (!r.ok) {
@@ -73,7 +73,7 @@ export default function UsersPage() {
         setUsers(res.data ?? []);
         setResetError(null);
         setResetLoading(true);
-        const resetRes = await fetch(`${API_BASE}/password-reset-requests`, {
+        const resetRes = await fetch(buildApiUrl("/password-reset-requests"), {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!resetRes.ok) {
@@ -102,7 +102,7 @@ export default function UsersPage() {
     setResetError(null);
     try {
       const res = await fetch(
-        `${API_BASE}/password-reset-requests/${id}/${decision}`,
+        buildApiUrl(`/password-reset-requests/${id}/${decision}`),
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
@@ -126,7 +126,7 @@ export default function UsersPage() {
     if (!token) return;
     try {
       const res = await fetch(
-        `${API_BASE}/password-reset-requests/${id}/reveal`,
+        buildApiUrl(`/password-reset-requests/${id}/reveal`),
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) {
@@ -146,7 +146,7 @@ export default function UsersPage() {
     try {
       setSavingId(user.id);
       setError(null);
-      const res = await fetch(`${API_BASE}/users/${user.id}`, {
+      const res = await fetch(buildApiUrl(`/users/${user.id}`), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -180,7 +180,7 @@ export default function UsersPage() {
     try {
       setSavingId(user.id);
       setError(null);
-      const res = await fetch(`${API_BASE}/users/${user.id}/reset-password`, {
+      const res = await fetch(buildApiUrl(`/users/${user.id}/reset-password`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -207,7 +207,7 @@ export default function UsersPage() {
       setSavingId(user.id);
       setError(null);
       const role = pendingRole[user.id] ?? "Encoder";
-      const res = await fetch(`${API_BASE}/users/${user.id}/approve`, {
+      const res = await fetch(buildApiUrl(`/users/${user.id}/approve`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -236,7 +236,7 @@ export default function UsersPage() {
     try {
       setSavingId(user.id);
       setError(null);
-      const res = await fetch(`${API_BASE}/users/${user.id}/reject`, {
+      const res = await fetch(buildApiUrl(`/users/${user.id}/reject`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

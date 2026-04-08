@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
+import { buildApiUrl } from "@/lib/apiBase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { clearAuthToken } from "@/lib/api";
@@ -74,8 +74,8 @@ export default function MyDocumentsPage() {
     try {
       const endpoint =
         kind === "excel"
-          ? `${API_BASE}/documents/export/excel?${exportQueryString}`
-          : `${API_BASE}/documents/export/pdf?${exportQueryString}`;
+          ? buildApiUrl(`/documents/export/excel?${exportQueryString}`)
+          : buildApiUrl(`/documents/export/pdf?${exportQueryString}`);
 
       const res = await fetch(endpoint, {
         method: "GET",
@@ -125,7 +125,7 @@ export default function MyDocumentsPage() {
 
         // Fetch documents encoded by current user
         const res = await fetch(
-          `${API_BASE}/documents?encoded_by=${auth.user.id}`,
+          buildApiUrl(`/documents?encoded_by=${auth.user.id}`),
           {
             headers: { Authorization: `Bearer ${token}` },
           }

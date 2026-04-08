@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_BASE_URL as API_BASE } from "@/lib/apiBase";
+import { buildApiUrl } from "@/lib/apiBase";
 import { useRouter } from "next/navigation";
 import DocumentForm, { DocumentPayload } from "@/components/DocumentForm";
 import { clearAuthToken } from "@/lib/api";
@@ -36,7 +36,7 @@ export default function NewDocumentPage() {
         const depsRes = await cachedJson(
           "departments:per_page=200",
           async () => {
-            const r = await fetch(`${API_BASE}/departments?per_page=200`, {
+            const r = await fetch(buildApiUrl("/departments?per_page=200"), {
               headers: { Authorization: `Bearer ${token}` },
             });
             if (!r.ok) throw new Error("Failed to load departments");
@@ -59,7 +59,7 @@ export default function NewDocumentPage() {
   }, [router, token]);
 
   async function handleCreate(payload: DocumentPayload) {
-    const res = await fetch(`${API_BASE}/documents`, {
+    const res = await fetch(buildApiUrl("/documents"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
