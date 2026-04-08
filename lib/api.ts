@@ -3,7 +3,8 @@
 
 import { API_BASE_URL } from "@/lib/apiBase";
 
-const API_REQUEST_TIMEOUT_MS = 20000;
+const API_REQUEST_TIMEOUT_MS = 45000;
+const API_RETRY_DELAY_MS = 3000;
 
 export type User = {
   id: number;
@@ -44,37 +45,55 @@ async function apiFetch<T>(
   options: RequestInit = {},
   auth = true
 ): Promise<T> {
-  const headers = new Headers(options.headers);
-  headers.set("Content-Type", "application/json");
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), API_REQUEST_TIMEOUT_MS);
+  const executeRequest = async (): Promise<Response> => {
+    const headers = new Headers(options.headers);
+    headers.set("Content-Type", "application/json");
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_REQUEST_TIMEOUT_MS);
 
-  if (auth) {
-    const token = getAuthToken();
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
+    if (auth) {
+      const token = getAuthToken();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
     }
-  }
+
+    try {
+      return await fetch(`${API_BASE_URL}${path}`, {
+        ...options,
+        headers,
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
 
   let res: Response;
   try {
-    res = await fetch(`${API_BASE_URL}${path}`, {
-      ...options,
-      headers,
-      signal: controller.signal,
-    });
+    res = await executeRequest();
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
+      await new Promise((resolve) => setTimeout(resolve, API_RETRY_DELAY_MS));
+
+      try {
+        res = await executeRequest();
+      } catch (retryError) {
+        if (retryError instanceof DOMException && retryError.name === "AbortError") {
+          throw new Error(
+            `The backend is taking too long to respond (${API_BASE_URL}). If Render is waking up, please wait a moment and try again.`
+          );
+        }
+
+        throw new Error(
+          `Cannot reach backend API (${API_BASE_URL}). Check frontend API URL and backend CORS settings.`
+        );
+      }
+    } else {
       throw new Error(
-        `The backend is taking too long to respond (${API_BASE_URL}). If Render is waking up, please wait a moment and try again.`
+        `Cannot reach backend API (${API_BASE_URL}). Check frontend API URL and backend CORS settings.`
       );
     }
-
-    throw new Error(
-      `Cannot reach backend API (${API_BASE_URL}). Check frontend API URL and backend CORS settings.`
-    );
-  } finally {
-    clearTimeout(timeoutId);
   }
 
   if (!res.ok) {
