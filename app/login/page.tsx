@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
-import { getApiOriginCandidates } from "@/lib/apiBase";
+import { getApiOriginCandidates, warmUpApiOrigins } from "@/lib/apiBase";
 import Image from "next/image";
 import { useAuth } from "@/components/AuthProvider";
 import Loader from "@/components/Loader";
@@ -46,6 +46,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
+      await warmUpApiOrigins();
       const res = await login(email, password);
       auth.setUserLocal(res.user);
       router.replace("/dashboard");

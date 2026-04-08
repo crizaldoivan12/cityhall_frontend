@@ -103,6 +103,30 @@ export function getApiOriginCandidates(): string[] {
   return getApiBaseCandidates().map((apiBaseUrl) => apiBaseUrl.replace(/\/api$/, ""));
 }
 
+export async function warmUpApiOrigins(timeoutMs = 12000): Promise<void> {
+  if (typeof window === "undefined") return;
+
+  const warmupRequests = getApiOriginCandidates().map(async (origin) => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      await fetch(`${origin}/?warmup=${Date.now()}`, {
+        method: "GET",
+        mode: "no-cors",
+        cache: "no-store",
+        signal: controller.signal,
+      });
+    } catch {
+      // Warmup is best-effort only.
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  });
+
+  await Promise.allSettled(warmupRequests);
+}
+
 export function buildApiUrl(path: string): string {
   return `${getApiBaseUrl()}${path}`;
 }

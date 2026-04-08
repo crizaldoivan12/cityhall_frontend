@@ -5,9 +5,10 @@ import {
   getApiBaseCandidates,
   rememberWorkingApiBaseUrl,
   getApiBaseUrl,
+  warmUpApiOrigins,
 } from "@/lib/apiBase";
 
-const API_REQUEST_TIMEOUT_MS = 45000;
+const API_REQUEST_TIMEOUT_MS = 75000;
 const API_RETRY_DELAY_MS = 3000;
 
 export type User = {
@@ -149,6 +150,7 @@ async function apiFetch<T>(
 
 // Auth endpoints
 export async function login(email: string, password: string): Promise<LoginResponse> {
+  await warmUpApiOrigins();
   const res = await apiFetch<LoginResponse>(
     "/auth/login",
     {
