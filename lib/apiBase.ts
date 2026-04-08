@@ -1,4 +1,4 @@
-const PRODUCTION_API_BASE_URL = "https://cityhall-backend-s1fg.onrender.com/api";
+const PRODUCTION_API_BASE_URL = "https://cityhall-backend-1.onrender.com/api";
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
