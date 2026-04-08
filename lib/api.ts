@@ -5,7 +5,6 @@ import {
   getApiBaseCandidates,
   rememberWorkingApiBaseUrl,
   getApiBaseUrl,
-  warmUpApiOrigins,
   API_BASE_URL,
 } from "@/lib/apiBase";
 
@@ -158,7 +157,6 @@ async function apiFetch<T>(
 
 // Auth endpoints
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  await warmUpApiOrigins();
   const res = await apiFetch<LoginResponse>(
     "/auth/login",
     {
