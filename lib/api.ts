@@ -148,8 +148,21 @@ async function apiFetch<T>(
   }
 
   if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}));
-    throw new Error(errorBody.message || "API request failed");
+    const responseText = await res.text();
+    let message = `API request failed (${res.status} ${res.statusText})`;
+
+    if (responseText) {
+      try {
+        const errorBody = JSON.parse(responseText) as { message?: string };
+        if (errorBody.message) {
+          message = errorBody.message;
+        }
+      } catch {
+        // Keep the status-based fallback when upstream returns HTML/plain text.
+      }
+    }
+
+    throw new Error(message);
   }
 
   return res.json();

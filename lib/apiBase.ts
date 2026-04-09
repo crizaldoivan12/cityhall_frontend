@@ -1,6 +1,6 @@
 const PRODUCTION_API_BASE_URLS = [
-  "https://cityhall-backend-s1fg.onrender.com/api",
   "https://cityhall-backend-1.onrender.com/api",
+  "https://cityhall-backend-s1fg.onrender.com/api",
 ] as const;
 
 const API_BASE_STORAGE_KEY = "cityhall_api_base_url";
