@@ -171,7 +171,7 @@ async function apiFetch<T>(
 // Auth endpoints
 export async function login(email: string, password: string): Promise<LoginResponse> {
   const res = await apiFetch<LoginResponse>(
-    "/auth/login",
+    "/api/auth/login",
     {
       method: "POST",
       body: JSON.stringify({ email, password }),
@@ -190,7 +190,7 @@ export async function registerUser(payload: {
   password: string;
 }): Promise<{ message: string }> {
   return apiFetch<{ message: string }>(
-    "/auth/register",
+    "/api/auth/register",
     {
       method: "POST",
       body: JSON.stringify(payload),
@@ -200,10 +200,10 @@ export async function registerUser(payload: {
 }
 
 export async function fetchMe(): Promise<User> {
-  return apiFetch<User>("/auth/me");
+  return apiFetch<User>("/api/auth/me");
 }
 
 export async function logout(): Promise<void> {
-  await apiFetch("/auth/logout", { method: "POST" });
+  await apiFetch("/api/auth/logout", { method: "POST" });
   clearAuthToken();
 }
