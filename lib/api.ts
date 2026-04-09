@@ -76,7 +76,7 @@ async function apiFetch<T>(
 
   const clientSideProxy = typeof window !== "undefined";
   const apiBaseCandidates = clientSideProxy
-    ? [API_BASE_URL]
+    ? [API_BASE_URL, ...getApiBaseCandidates()]
     : getApiBaseCandidates();
   const initialApiBaseUrl = clientSideProxy ? API_BASE_URL : getApiBaseUrl();
   const orderedApiBases = Array.from(
